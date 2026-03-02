@@ -1,0 +1,48 @@
+# --------------------------------------------------
+# Enforce LF line endings for all text files
+# --------------------------------------------------
+
+* text=auto eol=lf
+
+# Python
+*.py text eol=lf
+
+# Django / FastAPI templates
+*.html text eol=lf
+*.jinja text eol=lf
+*.jinja2 text eol=lf
+
+# Config files
+*.env text eol=lf
+*.ini text eol=lf
+*.cfg text eol=lf
+*.toml text eol=lf
+*.yaml text eol=lf
+*.yml text eol=lf
+*.json text eol=lf
+
+# Shell scripts
+*.sh text eol=lf
+
+# Docker
+Dockerfile text eol=lf
+*.dockerfile text eol=lf
+
+# Markdown & docs
+*.md text eol=lf
+*.txt text eol=lf
+
+# Static assets (keep as-is, no line ending normalization)
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.webp binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.eot binary
+*.zip binary
+*.gz binary
+*.tar binary
