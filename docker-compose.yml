@@ -25,4 +25,4 @@ services:
 volumes:
   db:
 networks:
-  app-networks:
+  app-network:
