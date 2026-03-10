@@ -5,6 +5,8 @@ services:
     ports:
       - "8000:8000"
     restart: unless-stopped
+    networks:
+      - app-network
   web:
     build: "djangoweb"
     container_name: djangoweb
@@ -13,8 +15,14 @@ services:
     restart: unless-stopped
     depends_on:
       - api
+    environment:
+      - API_URL=http://api:8000
     volumes:
       - db:/djangoweb/db.sqlite3
+    networks:
+      - app-network
 
 volumes:
   db:
+networks:
+  - app-networks
