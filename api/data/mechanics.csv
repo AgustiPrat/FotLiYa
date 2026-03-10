@@ -3,3 +3,4 @@ id,name,description
 2,random_player,Selecciona un jugador a l'atzar
 3,vote,Els jugadors han de votar qui és més probable
 4,guess_music,Els jugadors han de reconeixer una cançó per un tros d'aquesta
+5,impostor,Els jugadors jugaran a l'impostor
