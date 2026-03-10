@@ -14,9 +14,9 @@ class Place(BaseModel):
     id : int
     place : str
 
-class Category(BaseModel):
+class Theme(BaseModel):
     id: int
-    category: str
+    theme: str
 
 class LikelyTo(BaseModel):
     id: int
@@ -29,3 +29,11 @@ class RedFlag(BaseModel):
 class Word(BaseModel):
     id: int
     object: str
+
+class Question(BaseModel):
+    id: int
+    random_questions: str
+
+class SpicyQuestion(BaseModel):
+    id: int
+    spicy_questions: str

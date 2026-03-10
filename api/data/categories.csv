@@ -3,5 +3,6 @@ id,name,description
 2,Picant,Preguntes atrevides
 3,Random,Coses absurdes o divertides
 4,Proves,Realitzar algun tipus de prova
-5,Joc,Realitzar algun tipus de joc
-6,Altres,Altres
+5,Ronda,Realitzar algun tipus de joc/ronda de paraules
+6,Norma,Es posa una norma per el que queda de partida o durant unes rondes
+7,Altres,Altres
