@@ -1,0 +1,19 @@
+{% extends "FotLiYa/base.html" %}
+
+{% block content %}
+
+<h2>⚠️ Segur que vols tancar la sessió?</h2>
+
+<div style="margin-top:20px;">
+    
+    <a href="{% url 'logout' %}">
+        <button style="background:red;color:white;">Sí</button>
+    </a>
+
+    <a href="{% url 'home' %}">
+        <button>No</button>
+    </a>
+
+</div>
+
+{% endblock %}

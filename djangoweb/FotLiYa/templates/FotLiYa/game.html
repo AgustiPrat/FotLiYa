@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>FotLiYa</title>
+</head>
+
+<body style="font-family:Arial; text-align:center; background:#f0f0ff;">
+
+<h2>🔥 FotLiYa</h2>
+
+<p><b>Jugadors:</b></p>
+<ul>
+    {% for p in players %}
+        <li>{{ p }}</li>
+    {% endfor %}
+</ul>
+
+<hr>
+
+<h1>{{ question }}</h1>
+
+<form method="post">
+    {% csrf_token %}
+    <button style="padding:15px 30px; font-size:18px;">
+        FOTLIYA
+    </button>
+</form>
+
+</body>
+</html>

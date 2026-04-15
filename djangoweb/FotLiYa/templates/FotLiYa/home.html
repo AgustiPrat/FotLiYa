@@ -1,6 +1,19 @@
 {% extends "FotLiYa/base.html" %}
 
 {% block content %}
-<h1>Benvingut a FotLiYa 🍻</h1>
-<a class="btn" href="/games">Veure jocs</a>
+
+<h1>🎉 FotLiYa</h1>
+<p>El joc previ a la festa</p>
+
+{% if user.is_authenticated %}
+
+    <a class="btn" href="/games">Entrar</a>
+
+{% else %}
+
+    <a class="btn" href="/login">Iniciar sessió</a>
+    <a class="btn" href="/register">Crear compte</a>
+
+{% endif %}
+
 {% endblock %}
