@@ -1,19 +1,13 @@
 {% extends "FotLiYa/base.html" %}
 
 {% block content %}
+<div class="card">
+    <h2>⚠️ Segur que vols tancar la sessió?</h2>
+    <p>Si ho fas, tornaràs a la pantalla principal.</p>
 
-<h2>⚠️ Segur que vols tancar la sessió?</h2>
-
-<div style="margin-top:20px;">
-    
-    <a href="{% url 'logout' %}">
-        <button style="background:red;color:white;">Sí</button>
-    </a>
-
-    <a href="{% url 'home' %}">
-        <button>No</button>
-    </a>
-
+    <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap; margin-top:18px;">
+        <a class="btn btn-primary" href="{% url 'logout' %}">Sí</a>
+        <a class="btn btn-secondary" href="{% url 'home' %}">No</a>
+    </div>
 </div>
-
 {% endblock %}
