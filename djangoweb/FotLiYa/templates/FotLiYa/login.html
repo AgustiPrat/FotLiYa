@@ -1,0 +1,18 @@
+{% extends "FotLiYa/base.html" %}
+
+{% block content %}
+<div class="card">
+    <h2>Login</h2>
+
+    {% if error %}
+        <div class="error">{{ error }}</div>
+    {% endif %}
+
+    <form method="post">
+        {% csrf_token %}
+        <input type="text" name="username" placeholder="Usuari" required>
+        <input type="password" name="password" placeholder="Contrasenya" required>
+        <button class="btn btn-primary" type="submit">Entrar</button>
+    </form>
+</div>
+{% endblock %}
