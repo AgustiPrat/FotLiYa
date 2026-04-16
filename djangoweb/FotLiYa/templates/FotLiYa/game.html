@@ -1,0 +1,27 @@
+{% extends "FotLiYa/base.html" %}
+
+{% block content %}
+<div class="card">
+    <h2>🔥 FotLiYa</h2>
+    <p>Jugadors registrats per aquesta partida:</p>
+
+    <div class="chips">
+        {% for p in players %}
+            <span class="chip">{{ p }}</span>
+        {% endfor %}
+    </div>
+
+    <hr style="border-color: rgba(255,255,255,0.14); margin: 18px 0;">
+
+    <h3>{{ question }}</h3>
+
+    <div style="margin-top:18px; display:flex; gap:12px; justify-content:center; flex-wrap:wrap;">
+        <button type="button" class="btn btn-primary">FOTLIYA 🔥</button>
+
+        <form method="post" action="{% url 'finish_game' %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-secondary">Finalitzar partida</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

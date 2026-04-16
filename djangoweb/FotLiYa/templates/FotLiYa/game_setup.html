@@ -1,0 +1,18 @@
+{% extends "FotLiYa/base.html" %}
+
+{% block content %}
+<div class="card">
+    <h2>🍻 Quants jugadors sou?</h2>
+    <p>Escriu el número de participants de la prèvia.</p>
+
+    {% if error %}
+        <div class="error">{{ error }}</div>
+    {% endif %}
+
+    <form method="post">
+        {% csrf_token %}
+        <input type="number" name="num_players" min="2" max="20" placeholder="Ex: 4" required>
+        <button class="btn btn-primary" type="submit">Continuar 🚀</button>
+    </form>
+</div>
+{% endblock %}

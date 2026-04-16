@@ -1,0 +1,22 @@
+{% extends "FotLiYa/base.html" %}
+
+{% block content %}
+<div class="card">
+    <h2>🔥 Noms dels jugadors</h2>
+    <p>Posa els noms i després ja començarà el joc.</p>
+
+    {% if error %}
+        <div class="error">{{ error }}</div>
+    {% endif %}
+
+    <form method="post" action="{% url 'save_players_names' %}">
+        {% csrf_token %}
+
+        {% for i in range_players %}
+            <input type="text" name="player_{{ i }}" placeholder="Jugador {{ i|add:1 }}" required>
+        {% endfor %}
+
+        <button class="btn btn-primary" type="submit">Tot llest 🔥</button>
+    </form>
+</div>
+{% endblock %}
