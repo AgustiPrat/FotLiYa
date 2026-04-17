@@ -1,23 +1,22 @@
 {% extends "FotLiYa/base.html" %}
-
 {% block content %}
 <div class="card">
     <h2>🔥 FotLiYa</h2>
-    <p>Jugadors registrats per aquesta partida:</p>
-
     <div class="chips">
         {% for p in players %}
             <span class="chip">{{ p }}</span>
         {% endfor %}
     </div>
-
+    <form method="post" action="{% url 'add_player' %}" style="margin-top:12px; display:flex; gap:8px; justify-content:center;">
+        {% csrf_token %}
+        <input type="text" name="new_player" placeholder="Nom del nou jugador" required>
+        <button type="submit" class="btn btn-secondary">Afegir ➕</button>
+    </form>
     <hr style="border-color: rgba(255,255,255,0.14); margin: 18px 0;">
-
-    <h3>{{ question }}</h3>
-
+    <h3>{{ game.title }}</h3>
+    <p>{{ game.body }}</p>
     <div style="margin-top:18px; display:flex; gap:12px; justify-content:center; flex-wrap:wrap;">
-        <button type="button" class="btn btn-primary">FOTLIYA 🔥</button>
-
+        <a href="{% url 'game' %}" class="btn btn-primary">Següent 🔥</a>
         <form method="post" action="{% url 'finish_game' %}">
             {% csrf_token %}
             <button type="submit" class="btn btn-secondary">Finalitzar partida</button>

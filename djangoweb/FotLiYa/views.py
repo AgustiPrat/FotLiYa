@@ -2,6 +2,7 @@ from django.contrib.auth import login, authenticate, logout
 from django.shortcuts import render, redirect
 from django.utils import timezone
 from django.contrib.auth.forms import UserCreationForm
+from .api_client import get_random_game
 
 from .forms import SignUpForm
 from .models import GameSession, Player, Question, Answer
@@ -108,7 +109,6 @@ def save_players_names(request):
         # CREAR SESSIÓ DE PARTIDA
         game_session = GameSession.objects.create(
             user=request.user if request.user.is_authenticated else None,
-            started_at=timezone.now()
         )
 
         # CREAR PLAYERS A BD
@@ -148,16 +148,29 @@ def finish_game(request):
 
     return redirect("game")
 
-
 def game(request):
     players = request.session.get("players", [])
 
     if not players:
         return redirect("game_setup")
 
-    question = "🔥 Quin és el teu gènere musical per escalfar la pre?"
+    game = get_random_game(players)
 
     return render(request, "FotLiYa/game.html", {
         "players": players,
-        "question": question,
+        "game": game,
     })
+def add_player(request):
+    if request.method == "POST":
+        name = (request.POST.get("new_player") or "").strip()
+        session_id = request.session.get("game_session_id")
+
+        if name and session_id:
+            game_session = GameSession.objects.filter(id=session_id).first()
+            if game_session:
+                Player.objects.create(session=game_session, name=name)
+                players = request.session.get("players", [])
+                players.append(name)
+                request.session["players"] = players
+
+    return redirect("game")

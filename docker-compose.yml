@@ -18,7 +18,7 @@ services:
     environment:
       - API_URL=http://api:8000
     volumes:
-      - db:/djangoweb/db.sqlite3
+      - db:/app/db.sqlite3
     networks:
       - app-network
 
