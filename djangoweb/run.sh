@@ -1,2 +1,3 @@
-#!/bin/bash
-uv run manage.py runserver 8080 || echo "Error!"
+#!/bin/sh
+uv run manage.py migrate
+uv run manage.py runserver 0.0.0.0:8080

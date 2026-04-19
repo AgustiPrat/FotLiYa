@@ -1,12 +1,12 @@
 FROM astral/uv:python3.12-alpine
 
-WORKDIR /app
+ADD uv.lock uv.lock
+ADD pyproject.toml pyproject.toml
 
-COPY pyproject.toml uv.lock ./
-RUN uv sync --frozen
+RUN uv sync
 
 COPY . .
 
 EXPOSE 8080
 
-CMD ["uv", "run", "python", "manage.py", "runserver", "0.0.0.0:8080"]
+CMD ["sh", "run.sh"]
