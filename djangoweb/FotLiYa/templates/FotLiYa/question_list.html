@@ -1,0 +1,105 @@
+{% extends "FotLiYa/base.html" %}
+{% block title %}Les meves preguntes — FotLiYa{% endblock %}
+
+{% block content %}
+<div class="card" style="width: min(100%, 720px);">
+
+    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:20px;">
+        <h2 style="margin:0;">📋 Les meves preguntes</h2>
+        <a href="{% url 'question_create' %}" class="btn btn-primary">+ Nova pregunta</a>
+    </div>
+
+    {# Missatges d'èxit/error del Django messages framework #}
+    {% if messages %}
+        {% for message in messages %}
+            <div class="{% if message.tags == 'error' %}error{% else %}success-msg{% endif %}"
+                 style="padding:12px 14px; border-radius:14px; margin-bottom:14px;
+                        {% if message.tags == 'success' %}
+                            background:rgba(0,245,212,0.15); border:1px solid rgba(0,245,212,0.30); color:#00f5d4;
+                        {% else %}
+                            background:rgba(255,45,117,0.18); border:1px solid rgba(255,45,117,0.28); color:#ffd2e3;
+                        {% endif %}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    {% if questions %}
+        <div style="display:flex; flex-direction:column; gap:14px;">
+            {% for q in questions %}
+            <div style="background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.13);
+                        border-radius:18px; padding:18px 20px;">
+
+                {# Capçalera: categoria + estat #}
+                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:10px;">
+                    <span style="font-size:0.82rem; opacity:0.6; font-weight:600; text-transform:uppercase; letter-spacing:0.5px;">
+                        {{ q.category }}{% if q.mechanics %} · {{ q.mechanics }}{% endif %}
+                    </span>
+
+                    {# Chip d'estat amb color #}
+                    {% if q.status == 'pending' %}
+                        <span style="padding:4px 12px; border-radius:999px; font-size:0.8rem; font-weight:700;
+                                     background:rgba(255,138,0,0.22); border:1px solid rgba(255,138,0,0.40); color:#ffb347;">
+                            ⏳ Pendent
+                        </span>
+                    {% elif q.status == 'approved' %}
+                        <span style="padding:4px 12px; border-radius:999px; font-size:0.8rem; font-weight:700;
+                                     background:rgba(0,245,212,0.18); border:1px solid rgba(0,245,212,0.35); color:#00f5d4;">
+                            ✅ Aprovada
+                        </span>
+                    {% else %}
+                        <span style="padding:4px 12px; border-radius:999px; font-size:0.8rem; font-weight:700;
+                                     background:rgba(255,45,117,0.18); border:1px solid rgba(255,45,117,0.35); color:#ff7aaa;">
+                            ❌ Rebutjada
+                        </span>
+                    {% endif %}
+                </div>
+
+                {# Text de la pregunta #}
+                <p style="margin:0 0 {% if q.status == 'rejected' and q.admin_note %}10px{% else %}14px{% endif %}; font-size:1rem; line-height:1.5;">
+                    {{ q.text }}
+                </p>
+
+                {# Nota de rebuig si n'hi ha #}
+                {% if q.status == 'rejected' and q.admin_note %}
+                    <div style="background:rgba(255,45,117,0.10); border-left:3px solid rgba(255,45,117,0.5);
+                                padding:8px 12px; border-radius:0 10px 10px 0; margin-bottom:14px;
+                                font-size:0.88rem; color:rgba(255,200,200,0.85);">
+                        💬 <em>{{ q.admin_note }}</em>
+                    </div>
+                {% endif %}
+
+                {# Botons editar/eliminar (només si és pending) #}
+                <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                    {% if q.status == 'pending' %}
+                        <a href="{% url 'question_edit' q.pk %}" class="btn btn-secondary"
+                           style="padding:8px 14px; font-size:0.88rem;">
+                            ✏️ Editar
+                        </a>
+                        <a href="{% url 'question_delete' q.pk %}" class="btn"
+                           style="padding:8px 14px; font-size:0.88rem;
+                                  background:rgba(255,45,117,0.18); border:1px solid rgba(255,45,117,0.30); color:#ff7aaa;">
+                            🗑️ Eliminar
+                        </a>
+                    {% endif %}
+                    <span style="margin-left:auto; font-size:0.78rem; opacity:0.45; align-self:center;">
+                        {{ q.created_at|date:"d/m/Y" }}
+                    </span>
+                </div>
+
+            </div>
+            {% endfor %}
+        </div>
+
+    {% else %}
+        <div style="text-align:center; padding:40px 20px; opacity:0.65;">
+            <div style="font-size:2.5rem; margin-bottom:12px;">🤔</div>
+            <p>Encara no has proposat cap pregunta.</p>
+            <a href="{% url 'question_create' %}" class="btn btn-primary" style="margin-top:8px;">
+                Proposa la primera!
+            </a>
+        </div>
+    {% endif %}
+
+</div>
+{% endblock %}
