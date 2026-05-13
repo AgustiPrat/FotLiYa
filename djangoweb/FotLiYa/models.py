@@ -1,28 +1,67 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.utils import timezone
 
 
 class GameSession(models.Model):
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    started_at = models.DateTimeField(default=timezone.now)
     created_at = models.DateTimeField(auto_now_add=True)
     duration_seconds = models.IntegerField(null=True, blank=True)
     ended = models.BooleanField(default=False)
 
+    # Millora proposada a l'enunciat
+    game_type = models.CharField(max_length=50, blank=True, default="classic")
+    notes = models.TextField(blank=True, default="")
+
+    class Meta:
+        ordering = ["-started_at", "-created_at"]
+
     def __str__(self):
-        return f"Session {self.id}"
+        return f"Session {self.id} · {self.game_type}"
+
 
 class Player(models.Model):
-    session = models.ForeignKey(GameSession, on_delete=models.CASCADE, related_name="players")
+    session = models.ForeignKey(
+        GameSession,
+        on_delete=models.CASCADE,
+        related_name="players"
+    )
     name = models.CharField(max_length=50)
     score = models.IntegerField(default=0)
+
+    # Camps opcionals per a futures millores visuals
+    avatar = models.CharField(max_length=50, blank=True, default="")
+    color = models.CharField(max_length=20, blank=True, default="")
+
+    class Meta:
+        ordering = ["id"]
 
     def __str__(self):
         return f"{self.name} ({self.session.id})"
 
 
 class Question(models.Model):
-    text = models.CharField(max_length=255)
+    SOURCE_CHOICES = [
+        ("manual", "Manual"),
+        ("api", "API"),
+        ("proposed", "Proposada"),
+    ]
+
+    # CharField(255) -> TextField per permetre preguntes llargues
+    text = models.TextField()
     active = models.BooleanField(default=True)
+
+    # Per defecte "manual"; quan s'aprova una proposta s'assignarà "proposed"
+    source = models.CharField(
+        max_length=20,
+        choices=SOURCE_CHOICES,
+        default="manual",
+        db_index=True
+    )
+
+    class Meta:
+        ordering = ["id"]
 
     def __str__(self):
         return self.text
@@ -32,8 +71,49 @@ class Answer(models.Model):
     session = models.ForeignKey(GameSession, on_delete=models.CASCADE)
     player = models.ForeignKey(Player, on_delete=models.CASCADE)
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
+
+    # Es manté perquè pot ser útil en futures versions
     answer_text = models.CharField(max_length=255)
     created_at = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        ordering = ["-created_at"]
+
     def __str__(self):
         return f"{self.player.name} - {self.question.text}"
+
+
+class ProposedQuestion(models.Model):
+    STATUS_CHOICES = [
+        ("pending", "Pendent"),
+        ("approved", "Aprovada"),
+        ("rejected", "Rebutjada"),
+    ]
+
+    text = models.TextField()
+    category = models.CharField(max_length=100, db_index=True)
+    mechanics = models.CharField(max_length=100, blank=True)
+
+    created_by = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="proposed_questions"
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    status = models.CharField(
+        max_length=10,
+        choices=STATUS_CHOICES,
+        default="pending",
+        db_index=True
+    )
+
+    # Motiu del rebuig escrit per l'administrador
+    admin_note = models.TextField(blank=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"[{self.get_status_display()}] {self.category} - {self.text[:40]}"

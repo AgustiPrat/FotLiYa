@@ -1,0 +1,22 @@
+{% extends "FotLiYa/base.html" %}
+
+{% block title %}Admin · Rebutjar pregunta{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h1>❌ Rebutjar pregunta</h1>
+    <p><strong>Pregunta:</strong> {{ proposed.text }}</p>
+    <p><strong>Categoria:</strong> {{ proposed.category }}</p>
+
+    <form method="post">
+        {% csrf_token %}
+        <label for="admin_note">Motiu del rebuig</label>
+        <textarea id="admin_note" name="admin_note" rows="5" placeholder="Escriu el motiu..." required></textarea>
+
+        <div style="display:flex; gap:12px; flex-wrap:wrap; margin-top: 16px;">
+            <button class="btn btn-danger" type="submit">Confirmar rebuig</button>
+            <a class="btn btn-secondary" href="{% url 'admin_questions' %}">Cancel·lar</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
