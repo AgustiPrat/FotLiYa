@@ -13,4 +13,8 @@ urlpatterns = [
     path("game/finish/", views.finish_game, name="finish_game"),
     path("game/", views.game, name="game"),
     path("game/add_player/", views.add_player, name="add_player"),
+    path("questions/", views.question_list, name="question_list"),
+    path("questions/new/", views.question_create, name="question_create"),
+    path("questions/<int:pk>/edit/", views.question_edit, name="question_edit"),
+    path("questions/<int:pk>/delete/", views.question_delete, name="question_delete"),
 ]
