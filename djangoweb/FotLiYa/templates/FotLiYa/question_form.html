@@ -1,0 +1,168 @@
+{% extends "FotLiYa/base.html" %}
+{% block title %}{% if form.instance.pk %}Editar pregunta{% else %}Nova pregunta{% endif %} — FotLiYa{% endblock %}
+
+{% block content %}
+<div class="card" style="width: min(100%, 600px);">
+
+    <h2 style="margin-bottom:6px;">
+        {% if form.instance.pk %}✏️ Editar pregunta{% else %}💡 Nova pregunta{% endif %}
+    </h2>
+    <p style="margin-bottom:20px; opacity:0.65; font-size:0.9rem;">
+        {% if form.instance.pk %}
+            Modifica els camps que vulguis. Recorda que només pots editar preguntes pendents.
+        {% else %}
+            Proposa una pregunta per al joc. L'administrador la revisarà abans d'activar-la.
+        {% endif %}
+    </p>
+
+    {# Errors generals del formulari #}
+    {% if form.non_field_errors %}
+        <div class="error">{{ form.non_field_errors }}</div>
+    {% endif %}
+
+    <form method="post" autocomplete="off">
+        {% csrf_token %}
+
+        {# Camp: text de la pregunta #}
+        <label style="font-size:0.88rem; font-weight:600; opacity:0.75; display:block; margin-bottom:2px;">
+            Text de la pregunta *
+        </label>
+        <textarea name="text" rows="3"
+                  placeholder="Escriu la pregunta aquí (mínim 10 caràcters)..."
+                  style="resize:vertical;">{% if form.instance.pk %}{{ form.text.value }}{% endif %}</textarea>
+        {% if form.text.errors %}
+            <div class="error" style="margin-top:4px; padding:8px 12px; font-size:0.85rem;">
+                {{ form.text.errors }}
+            </div>
+        {% endif %}
+
+        {# Camp: categoria amb AJAX #}
+        <label style="font-size:0.88rem; font-weight:600; opacity:0.75; display:block; margin-top:14px; margin-bottom:2px;">
+            Categoria *
+        </label>
+        <input type="text" id="id_category" name="category"
+               placeholder="p. ex: humor, atrevida, cultura..."
+               value="{% if form.instance.pk %}{{ form.category.value }}{% endif %}">
+
+        {# Contenidor de suggeriments AJAX #}
+        <div id="suggestions" style="display:flex; flex-wrap:wrap; gap:8px; min-height:28px; margin-top:6px; margin-bottom:4px;"></div>
+        <p style="font-size:0.75rem; opacity:0.45; margin:0 0 4px;">
+            💡 Escriu per veure suggeriments de paraules relacionades
+        </p>
+
+        {% if form.category.errors %}
+            <div class="error" style="margin-top:4px; padding:8px 12px; font-size:0.85rem;">
+                {{ form.category.errors }}
+            </div>
+        {% endif %}
+
+        {# Camp: mecànica (opcional) #}
+        <label style="font-size:0.88rem; font-weight:600; opacity:0.75; display:block; margin-top:14px; margin-bottom:2px;">
+            Mecànica <span style="opacity:0.5;">(opcional)</span>
+        </label>
+        <input type="text" name="mechanics"
+               placeholder="p. ex: votació, repte, debat..."
+               value="{% if form.instance.pk %}{{ form.mechanics.value }}{% endif %}">
+        {% if form.mechanics.errors %}
+            <div class="error" style="margin-top:4px; padding:8px 12px; font-size:0.85rem;">
+                {{ form.mechanics.errors }}
+            </div>
+        {% endif %}
+
+        {# Botons d'acció #}
+        <div style="display:flex; gap:10px; margin-top:24px; flex-wrap:wrap;">
+            <button type="submit" class="btn btn-primary">
+                {% if form.instance.pk %}💾 Guardar canvis{% else %}🚀 Enviar proposta{% endif %}
+            </button>
+            <a href="{% url 'question_list' %}" class="btn btn-secondary">
+                ← Tornar
+            </a>
+        </div>
+    </form>
+</div>
+
+{# jQuery i AJAX amb API Datamuse #}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+$(document).ready(function () {
+
+    var debounceTimer;
+
+    $("#id_category").on("keyup", function () {
+        var query = $(this).val().trim();
+
+        // Netejar suggeriments si el camp és molt curt
+        if (query.length <= 2) {
+            $("#suggestions").html("");
+            return;
+        }
+
+        // Debounce: esperar 300ms després que l'usuari deixi d'escriure
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(function () {
+
+            $("#suggestions").html(
+                '<span style="font-size:0.8rem; opacity:0.5;">Buscant...</span>'
+            );
+
+            $.get("https://api.datamuse.com/words", { ml: query, max: 6 }, function (data) {
+                if (data.length === 0) {
+                    $("#suggestions").html(
+                        '<span style="font-size:0.8rem; opacity:0.45;">Cap suggeriment trobat</span>'
+                    );
+                    return;
+                }
+
+                var html = data.map(function (item) {
+                    // Escapem cometes simples per seguretat
+                    var word = item.word.replace(/'/g, "\\'");
+                    return (
+                        '<span class="suggestion-chip" ' +
+                        'onclick="$(\'#id_category\').val(\'' + word + '\'); $(\'#suggestions\').html(\'\');">' +
+                        item.word +
+                        '</span>'
+                    );
+                }).join("");
+
+                $("#suggestions").html(html);
+
+            }).fail(function () {
+                $("#suggestions").html(
+                    '<span style="font-size:0.8rem; opacity:0.45; color:#ff7aaa;">Error en obtenir suggeriments</span>'
+                );
+            });
+
+        }, 300);
+    });
+
+    // Amagar suggeriments si es clica fora
+    $(document).on("click", function (e) {
+        if (!$(e.target).closest("#id_category, #suggestions").length) {
+            $("#suggestions").html("");
+        }
+    });
+});
+</script>
+
+{# Estils per als chips de suggeriments #}
+<style>
+.suggestion-chip {
+    display: inline-block;
+    padding: 5px 13px;
+    border-radius: 999px;
+    background: rgba(0, 245, 212, 0.15);
+    border: 1px solid rgba(0, 245, 212, 0.30);
+    color: #00f5d4;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s ease, transform 0.1s ease;
+    font-family: 'Poppins', sans-serif;
+}
+.suggestion-chip:hover {
+    background: rgba(0, 245, 212, 0.28);
+    transform: translateY(-1px);
+}
+</style>
+
+{% endblock %}
