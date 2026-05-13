@@ -218,12 +218,19 @@
 
         <div class="nav-links">
             {% if user.is_authenticated %}
-                <span class="nav-pill">👤 {{ user.username }}</span>
-                <a class="nav-pill" href="{% url 'logout_confirm' %}">Logout</a>
-            {% else %}
-                <a class="nav-pill" href="{% url 'login' %}">Login</a>
-                <a class="nav-pill" href="{% url 'register' %}">Register</a>
+            <a class="nav-pill" href="/questions/">💡 Les meves preguntes</a>
+            {% if user.is_staff %}
+                <a class="nav-pill" href="/admin-panel/questions/"
+                   style="background:rgba(255,138,0,0.18); border:1px solid rgba(255,138,0,0.35); color:#ffb347;">
+                    🛡️ Admin
+                </a>
             {% endif %}
+            <span class="nav-pill">👤 {{ user.username }}</span>
+            <a class="nav-pill" href="{% url 'logout_confirm' %}">Logout</a>
+        {% else %}
+            <a class="nav-pill" href="{% url 'login' %}">Login</a>
+            <a class="nav-pill" href="{% url 'register' %}">Register</a>
+        {% endif %}
         </div>
     </nav>
 
