@@ -2,7 +2,9 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/FotLiYa.iml" filepath="$PROJECT_DIR$/.idea/FotLiYa.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/api.iml" filepath="$PROJECT_DIR$/.idea/api.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/fotliya.iml" filepath="$PROJECT_DIR$/.idea/fotliya.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/projecteweb.iml" filepath="$PROJECT_DIR$/.idea/projecteweb.iml" />
     </modules>
   </component>
 </project>

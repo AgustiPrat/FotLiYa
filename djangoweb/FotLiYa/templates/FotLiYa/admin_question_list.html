@@ -1,0 +1,30 @@
+{% extends "FotLiYa/base.html" %}
+
+{% block title %}Admin Questions{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h1>Preguntes pendents</h1>
+
+    {% if proposed_questions %}
+        <ul style="padding-left: 20px;">
+            {% for question in proposed_questions %}
+                <li style="margin-bottom: 18px;">
+                    <strong>{{ question.category }}</strong><br>
+                    {{ question.text }}<br>
+                    <small>Autor: {{ question.created_by.username }} · {{ question.created_at }}</small><br><br>
+
+                    <form method="post" action="{% url 'approve_question' question.pk %}" style="display:inline;">
+                        {% csrf_token %}
+                        <button class="btn btn-primary" type="submit">Aprovar</button>
+                    </form>
+
+                    <a class="btn btn-secondary" href="{% url 'reject_question' question.pk %}">Rebutjar</a>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No hi ha preguntes pendents.</p>
+    {% endif %}
+</div>
+{% endblock %}
