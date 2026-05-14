@@ -226,6 +226,7 @@ def reject_question(request, pk):
         "proposed_question": proposed_question,
     })
 
+
 @login_required
 def question_list(request):
     questions = ProposedQuestion.objects.filter(created_by=request.user).order_by("-created_at")
@@ -278,6 +279,10 @@ def question_edit(request, pk):
 @login_required
 def question_delete(request, pk):
     question = get_object_or_404(ProposedQuestion, pk=pk, created_by=request.user)
+
+    if question.status != "pending":
+        messages.error(request, "Només pots eliminar preguntes que estiguin pendents.")
+        return redirect("question_list")
 
     if request.method == "POST":
         question.delete()

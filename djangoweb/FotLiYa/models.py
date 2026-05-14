@@ -58,10 +58,10 @@ class ProposedQuestion(models.Model):
     text = models.TextField()
     category = models.CharField(max_length=100)
     mechanics = models.CharField(max_length=100, blank=True)
-    created_by = models.ForeignKey(User, on_delete=models.CASCADE)
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name="proposed_questions")
     created_at = models.DateTimeField(auto_now_add=True)
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default="pending")
     admin_note = models.TextField(blank=True)
 
     def __str__(self):
-        return f"{self.category} - {self.status}"
+        return f"{self.text[:50]} ({self.get_status_display()})"
