@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import GameSession, Player, Question, Answer
+from .models import GameSession, Player, Question, Answer, ProposedQuestion
 
 
 class PlayerInline(admin.TabularInline):
@@ -26,3 +26,8 @@ class QuestionAdmin(admin.ModelAdmin):
 @admin.register(Answer)
 class AnswerAdmin(admin.ModelAdmin):
     list_display = ("player", "question", "session", "created_at")
+
+@admin.register(ProposedQuestion)
+class ProposedQuestionAdmin(admin.ModelAdmin):
+    list_display = ("text", "category", "created_by", "status", "created_at")
+    list_filter = ("status", "created_at")

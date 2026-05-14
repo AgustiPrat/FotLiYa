@@ -1,8 +1,12 @@
 from django.contrib.auth import login, authenticate, logout
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.utils import timezone
 from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 from .api_client import get_random_game
+from .models import GameSession, Player, Question, Answer, ProposedQuestion
+from .forms import ProposedQuestionForm
 
 from .forms import SignUpForm
 from .models import GameSession, Player, Question, Answer
@@ -174,3 +178,68 @@ def add_player(request):
                 request.session["players"] = players
 
     return redirect("game")
+
+@login_required
+def question_list(request):
+    questions = ProposedQuestion.objects.filter(
+        created_by=request.user
+    ).order_by('-created_at')
+
+    return render(request, 'FotLiYa/question_list.html', {
+        'questions': questions
+    })
+
+@login_required
+def question_create(request):
+    if request.method == 'POST':
+        form = ProposedQuestionForm(request.POST)
+        if form.is_valid():
+            question = form.save(commit=False)
+            question.created_by = request.user
+            question.save()
+            messages.success(request, "Pregunta proposada correctament! L'administrador la revisarà aviat.")
+            return redirect('question_list')
+    else:
+        form = ProposedQuestionForm()
+
+    return render(request, 'FotLiYa/question_form.html', {
+        'form': form
+    })
+
+@login_required
+def question_edit(request, pk):
+    question = get_object_or_404(ProposedQuestion, pk=pk, created_by=request.user)
+
+    if question.status != 'pending':
+        messages.error(request, "Només pots editar preguntes que estiguin pendents.")
+        return redirect('question_list')
+
+    if request.method == 'POST':
+        form = ProposedQuestionForm(request.POST, instance=question)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Pregunta actualitzada correctament!")
+            return redirect('question_list')
+    else:
+        form = ProposedQuestionForm(instance=question)
+
+    return render(request, 'FotLiYa/question_form.html', {
+        'form': form
+    })
+
+@login_required
+def question_delete(request, pk):
+    question = get_object_or_404(ProposedQuestion, pk=pk, created_by=request.user)
+
+    if question.status != 'pending':
+        messages.error(request, "Només pots eliminar preguntes que estiguin pendents.")
+        return redirect('question_list')
+
+    if request.method == 'POST':
+        question.delete()
+        messages.success(request, "Pregunta eliminada correctament.")
+        return redirect('question_list')
+
+    return render(request, 'FotLiYa/question_confirm_delete.html', {
+        'question': question
+    })
