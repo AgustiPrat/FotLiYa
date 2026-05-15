@@ -1,28 +1,52 @@
 services:
+  db:
+    image: postgres:16
+    container_name: fotliya-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: fotliya
+      POSTGRES_USER: fotliya
+      POSTGRES_PASSWORD: fotliya
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - app-network
+
   api:
-    build: "api"
+    build: api
     container_name: apifly
     ports:
       - "8000:8000"
     restart: unless-stopped
     networks:
       - app-network
+
   web:
-    build: "djangoweb"
+    build: djangoweb
     container_name: djangoweb
     ports:
       - "8080:8080"
     restart: unless-stopped
     depends_on:
+      - db
       - api
     environment:
-      - API_URL=http://api:8000
-    volumes:
-      - db:/djangoweb/db.sqlite3
+      DEBUG: "False"
+      ALLOWED_HOSTS: "localhost,127.0.0.1"
+      DB_ENGINE: postgres
+      DB_NAME: fotliya
+      DB_USER: fotliya
+      DB_PASSWORD: fotliya
+      DB_HOST: db
+      DB_PORT: "5432"
+      API_URL: http://api:8000
     networks:
       - app-network
 
 volumes:
-  db:
+  postgres_data:
+
 networks:
   app-network:

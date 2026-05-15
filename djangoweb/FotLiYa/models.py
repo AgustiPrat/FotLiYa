@@ -9,6 +9,7 @@ class GameSession(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     duration_seconds = models.IntegerField(null=True, blank=True)
     ended = models.BooleanField(default=False)
+    game_type = models.CharField(max_length=100, blank=True, default="")
 
     # Millora proposada a l'enunciat
     game_type = models.CharField(max_length=50, blank=True, default="classic")
@@ -18,7 +19,8 @@ class GameSession(models.Model):
         ordering = ["-started_at", "-created_at"]
 
     def __str__(self):
-        return f"Session {self.id} · {self.game_type}"
+        username = self.user.username if self.user else "anonymous"
+        return f"Session {self.id} - {username}"
 
 
 class Player(models.Model):
@@ -38,7 +40,7 @@ class Player(models.Model):
         ordering = ["id"]
 
     def __str__(self):
-        return f"{self.name} ({self.session.id})"
+        return f"{self.name} (session {self.session.id})"
 
 
 class Question(models.Model):
@@ -51,6 +53,7 @@ class Question(models.Model):
     # CharField(255) -> TextField per permetre preguntes llargues
     text = models.TextField()
     active = models.BooleanField(default=True)
+    source = models.CharField(max_length=20, choices=SOURCE_CHOICES, default="api")
 
     # Per defecte "manual"; quan s'aprova una proposta s'assignarà "proposed"
     source = models.CharField(
@@ -116,4 +119,23 @@ class ProposedQuestion(models.Model):
         ordering = ["-created_at"]
 
     def __str__(self):
-        return f"[{self.get_status_display()}] {self.category} - {self.text[:40]}"
+        return f"{self.player.name} - {self.question.text}"
+
+
+class ProposedQuestion(models.Model):
+    STATUS_CHOICES = [
+        ("pending", "Pendent"),
+        ("approved", "Aprovada"),
+        ("rejected", "Rebutjada"),
+    ]
+
+    text = models.TextField()
+    category = models.CharField(max_length=100)
+    mechanics = models.CharField(max_length=100, blank=True)
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name="proposed_questions")
+    created_at = models.DateTimeField(auto_now_add=True)
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default="pending")
+    admin_note = models.TextField(blank=True)
+
+    def __str__(self):
+        return f"{self.text[:50]} ({self.get_status_display()})"

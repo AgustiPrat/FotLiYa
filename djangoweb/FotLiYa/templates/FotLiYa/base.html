@@ -375,6 +375,12 @@
                 <a class="nav-pill" href="{% url 'login' %}">Login</a>
                 <a class="nav-pill" href="{% url 'register' %}">Register</a>
             {% endif %}
+            <span class="nav-pill">👤 {{ user.username }}</span>
+            <a class="nav-pill" href="{% url 'logout_confirm' %}">Logout</a>
+        {% else %}
+            <a class="nav-pill" href="{% url 'login' %}">Login</a>
+            <a class="nav-pill" href="{% url 'register' %}">Register</a>
+        {% endif %}
         </div>
     </nav>
 
