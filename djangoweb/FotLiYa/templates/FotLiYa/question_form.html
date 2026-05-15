@@ -15,7 +15,6 @@
         {% endif %}
     </p>
 
-    {# Errors generals del formulari #}
     {% if form.non_field_errors %}
         <div class="error">{{ form.non_field_errors }}</div>
     {% endif %}
@@ -23,7 +22,6 @@
     <form method="post" autocomplete="off">
         {% csrf_token %}
 
-        {# Camp: text de la pregunta #}
         <label style="font-size:0.88rem; font-weight:600; opacity:0.75; display:block; margin-bottom:2px;">
             Text de la pregunta *
         </label>
@@ -36,7 +34,6 @@
             </div>
         {% endif %}
 
-        {# Camp: categoria amb AJAX #}
         <label style="font-size:0.88rem; font-weight:600; opacity:0.75; display:block; margin-top:14px; margin-bottom:2px;">
             Categoria *
         </label>
@@ -44,10 +41,9 @@
                placeholder="p. ex: humor, atrevida, cultura..."
                value="{% if form.instance.pk %}{{ form.category.value }}{% endif %}">
 
-        {# Contenidor de suggeriments AJAX #}
         <div id="suggestions" style="display:flex; flex-wrap:wrap; gap:8px; min-height:28px; margin-top:6px; margin-bottom:4px;"></div>
         <p style="font-size:0.75rem; opacity:0.45; margin:0 0 4px;">
-            💡 Escriu per veure suggeriments de paraules relacionades
+            💡 Escriu per veure suggeriments de categories
         </p>
 
         {% if form.category.errors %}
@@ -56,7 +52,6 @@
             </div>
         {% endif %}
 
-        {# Camp: mecànica (opcional) #}
         <label style="font-size:0.88rem; font-weight:600; opacity:0.75; display:block; margin-top:14px; margin-bottom:2px;">
             Mecànica <span style="opacity:0.5;">(opcional)</span>
         </label>
@@ -69,7 +64,6 @@
             </div>
         {% endif %}
 
-        {# Botons d'acció #}
         <div style="display:flex; gap:10px; margin-top:24px; flex-wrap:wrap;">
             <button type="submit" class="btn btn-primary">
                 {% if form.instance.pk %}💾 Guardar canvis{% else %}🚀 Enviar proposta{% endif %}
@@ -81,61 +75,47 @@
     </form>
 </div>
 
-{# jQuery i AJAX amb API Datamuse #}
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
 $(document).ready(function () {
 
-    var debounceTimer;
+    var categories = [
+        "humor", "atrevida", "cultura", "música", "esports", "cinema",
+        "viatges", "menjar", "festa", "amor", "amistat", "tecnologia",
+        "natura", "art", "historia", "ciència", "moda", "animals",
+        "política", "filosofia", "videojocs", "sèries", "llibres"
+    ];
 
     $("#id_category").on("keyup", function () {
-        var query = $(this).val().trim();
+        var query = $(this).val().trim().toLowerCase();
 
-        // Netejar suggeriments si el camp és molt curt
-        if (query.length <= 2) {
-            $("#suggestions").html("");
+        $("#suggestions").html("");
+
+        if (query.length === 0) return;
+
+        var filtered = categories.filter(function(cat) {
+            return cat.startsWith(query);
+        });
+
+        if (filtered.length === 0) {
+            $("#suggestions").html(
+                '<span style="font-size:0.8rem; opacity:0.45;">Cap suggeriment trobat</span>'
+            );
             return;
         }
 
-        // Debounce: esperar 300ms després que l'usuari deixi d'escriure
-        clearTimeout(debounceTimer);
-        debounceTimer = setTimeout(function () {
-
-            $("#suggestions").html(
-                '<span style="font-size:0.8rem; opacity:0.5;">Buscant...</span>'
+        var html = filtered.map(function(cat) {
+            return (
+                '<span class="suggestion-chip" ' +
+                'onclick="$(\'#id_category\').val(\'' + cat + '\'); $(\'#suggestions\').html(\'\');">' +
+                cat +
+                '</span>'
             );
+        }).join("");
 
-            $.get("https://api.datamuse.com/words", { ml: query, max: 6 }, function (data) {
-                if (data.length === 0) {
-                    $("#suggestions").html(
-                        '<span style="font-size:0.8rem; opacity:0.45;">Cap suggeriment trobat</span>'
-                    );
-                    return;
-                }
-
-                var html = data.map(function (item) {
-                    // Escapem cometes simples per seguretat
-                    var word = item.word.replace(/'/g, "\\'");
-                    return (
-                        '<span class="suggestion-chip" ' +
-                        'onclick="$(\'#id_category\').val(\'' + word + '\'); $(\'#suggestions\').html(\'\');">' +
-                        item.word +
-                        '</span>'
-                    );
-                }).join("");
-
-                $("#suggestions").html(html);
-
-            }).fail(function () {
-                $("#suggestions").html(
-                    '<span style="font-size:0.8rem; opacity:0.45; color:#ff7aaa;">Error en obtenir suggeriments</span>'
-                );
-            });
-
-        }, 300);
+        $("#suggestions").html(html);
     });
 
-    // Amagar suggeriments si es clica fora
     $(document).on("click", function (e) {
         if (!$(e.target).closest("#id_category, #suggestions").length) {
             $("#suggestions").html("");
@@ -144,7 +124,6 @@ $(document).ready(function () {
 });
 </script>
 
-{# Estils per als chips de suggeriments #}
 <style>
 .suggestion-chip {
     display: inline-block;

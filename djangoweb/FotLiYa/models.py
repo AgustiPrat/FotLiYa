@@ -9,14 +9,11 @@ class GameSession(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     duration_seconds = models.IntegerField(null=True, blank=True)
     ended = models.BooleanField(default=False)
-    game_type = models.CharField(max_length=100, blank=True, default="")
-
-    # Millora proposada a l'enunciat
     game_type = models.CharField(max_length=50, blank=True, default="classic")
     notes = models.TextField(blank=True, default="")
 
     class Meta:
-        ordering = ["-started_at", "-created_at"]
+        ordering = ["-created_at"]
 
     def __str__(self):
         username = self.user.username if self.user else "anonymous"
@@ -24,15 +21,9 @@ class GameSession(models.Model):
 
 
 class Player(models.Model):
-    session = models.ForeignKey(
-        GameSession,
-        on_delete=models.CASCADE,
-        related_name="players"
-    )
+    session = models.ForeignKey(GameSession, on_delete=models.CASCADE, related_name="players")
     name = models.CharField(max_length=50)
     score = models.IntegerField(default=0)
-
-    # Camps opcionals per a futures millores visuals
     avatar = models.CharField(max_length=50, blank=True, default="")
     color = models.CharField(max_length=20, blank=True, default="")
 
@@ -49,19 +40,9 @@ class Question(models.Model):
         ("api", "API"),
         ("proposed", "Proposada"),
     ]
-
-    # CharField(255) -> TextField per permetre preguntes llargues
     text = models.TextField()
     active = models.BooleanField(default=True)
-    source = models.CharField(max_length=20, choices=SOURCE_CHOICES, default="api")
-
-    # Per defecte "manual"; quan s'aprova una proposta s'assignarà "proposed"
-    source = models.CharField(
-        max_length=20,
-        choices=SOURCE_CHOICES,
-        default="manual",
-        db_index=True
-    )
+    source = models.CharField(max_length=20, choices=SOURCE_CHOICES, default="manual", db_index=True)
 
     class Meta:
         ordering = ["id"]
@@ -74,8 +55,6 @@ class Answer(models.Model):
     session = models.ForeignKey(GameSession, on_delete=models.CASCADE)
     player = models.ForeignKey(Player, on_delete=models.CASCADE)
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
-
-    # Es manté perquè pot ser útil en futures versions
     answer_text = models.CharField(max_length=255)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -92,50 +71,16 @@ class ProposedQuestion(models.Model):
         ("approved", "Aprovada"),
         ("rejected", "Rebutjada"),
     ]
-
     text = models.TextField()
     category = models.CharField(max_length=100, db_index=True)
     mechanics = models.CharField(max_length=100, blank=True)
-
-    created_by = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name="proposed_questions"
-    )
-
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name="proposed_questions")
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
-
-    status = models.CharField(
-        max_length=10,
-        choices=STATUS_CHOICES,
-        default="pending",
-        db_index=True
-    )
-
-    # Motiu del rebuig escrit per l'administrador
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default="pending", db_index=True)
     admin_note = models.TextField(blank=True)
 
     class Meta:
         ordering = ["-created_at"]
-
-    def __str__(self):
-        return f"{self.player.name} - {self.question.text}"
-
-
-class ProposedQuestion(models.Model):
-    STATUS_CHOICES = [
-        ("pending", "Pendent"),
-        ("approved", "Aprovada"),
-        ("rejected", "Rebutjada"),
-    ]
-
-    text = models.TextField()
-    category = models.CharField(max_length=100)
-    mechanics = models.CharField(max_length=100, blank=True)
-    created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name="proposed_questions")
-    created_at = models.DateTimeField(auto_now_add=True)
-    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default="pending")
-    admin_note = models.TextField(blank=True)
 
     def __str__(self):
         return f"{self.text[:50]} ({self.get_status_display()})"
