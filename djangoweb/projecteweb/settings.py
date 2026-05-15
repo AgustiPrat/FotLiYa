@@ -5,6 +5,10 @@ Django settings for projecteweb project.
 from pathlib import Path
 import os
 
+SECRET_KEY = os.environ.get("SECRET_KEY", "dev-secret")
+DEBUG = False
+
+# Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.environ.get("SECRET_KEY", "dev-secret")
@@ -43,6 +47,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'FotLiYa.context_processors.pending_questions_count',
             ],
         },
     },
@@ -73,6 +78,7 @@ else:
 
 AUTH_PASSWORD_VALIDATORS = [
     {
+        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
     },
     {

@@ -17,6 +17,10 @@
             --cyan:#00f5d4;
             --glass: rgba(255,255,255,0.14);
             --glass-border: rgba(255,255,255,0.22);
+            --success: rgba(0, 245, 212, 0.18);
+            --warning: rgba(255, 138, 0, 0.18);
+            --error: rgba(255, 45, 117, 0.18);
+            --info: rgba(124, 58, 237, 0.18);
         }
 
         * { box-sizing: border-box; }
@@ -100,6 +104,23 @@
             border-radius: 999px;
             background: rgba(255,255,255,0.10);
             border: 1px solid rgba(255,255,255,0.12);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 24px;
+            height: 24px;
+            padding: 0 8px;
+            border-radius: 999px;
+            background: var(--pink);
+            color: white;
+            font-size: 0.8rem;
+            font-weight: 800;
         }
 
         .container {
@@ -113,7 +134,7 @@
         }
 
         .card {
-            width: min(100%, 560px);
+            width: min(100%, 720px);
             background: var(--glass);
             border: 1px solid var(--glass-border);
             backdrop-filter: blur(18px);
@@ -176,10 +197,34 @@
             border: 1px solid rgba(255,255,255,0.18);
         }
 
+        .btn-danger {
+            background: linear-gradient(135deg, #ff5a8b, #ff2d75);
+            color: white;
+        }
+
         button:hover, .btn:hover {
             transform: translateY(-1px) scale(1.01);
             filter: brightness(1.03);
         }
+
+        .messages {
+            margin-bottom: 18px;
+            display: grid;
+            gap: 10px;
+        }
+
+        .message {
+            padding: 12px 14px;
+            border-radius: 14px;
+            border: 1px solid rgba(255,255,255,0.16);
+            background: rgba(255,255,255,0.08);
+            color: white;
+        }
+
+        .message.success { background: var(--success); border-color: rgba(0,245,212,0.28); }
+        .message.warning { background: var(--warning); border-color: rgba(255,138,0,0.30); }
+        .message.error { background: var(--error); border-color: rgba(255,45,117,0.28); }
+        .message.info { background: var(--info); border-color: rgba(124,58,237,0.28); }
 
         .error {
             color: #ffd2e3;
@@ -204,6 +249,102 @@
             border: 1px solid rgba(255,255,255,0.16);
             font-size: 0.92rem;
         }
+
+        .status-chip {
+            display: inline-flex;
+            align-items: center;
+            padding: 7px 12px;
+            border-radius: 999px;
+            font-size: 0.85rem;
+            font-weight: 700;
+        }
+
+        .status-pending { background: rgba(255, 138, 0, 0.20); border: 1px solid rgba(255, 138, 0, 0.28); }
+        .status-approved { background: rgba(0, 245, 212, 0.20); border: 1px solid rgba(0, 245, 212, 0.28); color: #eafffb; }
+        .status-rejected { background: rgba(255, 45, 117, 0.20); border: 1px solid rgba(255, 45, 117, 0.28); }
+        .muted { color: rgba(255,255,255,0.72); }
+
+        .admin-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 16px;
+            overflow: hidden;
+        }
+
+        .admin-table th, .admin-table td {
+            text-align: left;
+            padding: 14px 12px;
+            border-bottom: 1px solid rgba(255,255,255,0.10);
+            vertical-align: top;
+        }
+
+        .admin-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .suggestions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .suggestion {
+            display: inline-flex;
+            padding: 8px 12px;
+            border-radius: 999px;
+            cursor: pointer;
+            background: rgba(255,255,255,0.15);
+            border: 1px solid rgba(255,255,255,0.18);
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 640px) {
+            nav {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+            }
+
+            .card {
+                padding: 22px;
+                border-radius: 22px;
+            }
+
+            .container {
+                padding: 16px;
+            }
+
+            .admin-table, .admin-table tbody, .admin-table tr, .admin-table td, .admin-table th {
+                display: block;
+                width: 100%;
+            }
+
+            .admin-table th {
+                display: none;
+            }
+
+            .admin-table td {
+                padding: 10px 0;
+            }
+
+            .admin-table tr {
+                padding: 14px 0;
+                border-bottom: 1px solid rgba(255,255,255,0.12);
+            }
+        }
+
+        .card-wide {
+            width: min(100%, 980px);
+        }
+
+        .table-wrap {
+            width: 100%;
+            overflow-x: auto;
+            margin-top: 16px;
+        }
     </style>
 </head>
 <body>
@@ -218,12 +359,21 @@
 
         <div class="nav-links">
             {% if user.is_authenticated %}
-            <a class="nav-pill" href="/questions/">💡 Les meves preguntes</a>
-            {% if user.is_staff %}
-                <a class="nav-pill" href="/admin-panel/questions/"
-                   style="background:rgba(255,138,0,0.18); border:1px solid rgba(255,138,0,0.35); color:#ffb347;">
-                    🛡️ Admin
-                </a>
+                <span class="nav-pill">👤 {{ user.username }}</span>
+
+                {% if user.is_staff %}
+                    <a class="nav-pill" href="{% url 'admin_questions' %}">
+                        🛠 Admin
+                        {% if pending_questions_count %}
+                            <span class="badge">{{ pending_questions_count }}</span>
+                        {% endif %}
+                    </a>
+                {% endif %}
+
+                <a class="nav-pill" href="{% url 'logout_confirm' %}">Logout</a>
+            {% else %}
+                <a class="nav-pill" href="{% url 'login' %}">Login</a>
+                <a class="nav-pill" href="{% url 'register' %}">Register</a>
             {% endif %}
             <span class="nav-pill">👤 {{ user.username }}</span>
             <a class="nav-pill" href="{% url 'logout_confirm' %}">Logout</a>
@@ -235,7 +385,17 @@
     </nav>
 
     <main class="container">
-        {% block content %}{% endblock %}
+        <div style="width:100%; max-width: 980px;">
+            {% if messages %}
+                <div class="messages">
+                    {% for message in messages %}
+                        <div class="message {{ message.tags }}">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            {% block content %}{% endblock %}
+        </div>
     </main>
 </body>
 </html>

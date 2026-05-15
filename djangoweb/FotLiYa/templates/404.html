@@ -1,0 +1,30 @@
+{% extends "FotLiYa/base.html" %}
+
+{% block title %}404 · Pàgina no trobada{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h1>🔍 404</h1>
+    <h2>Pàgina no trobada</h2>
+
+    <p>
+        La pàgina que busques no existeix o l'adreça no és correcta.
+    </p>
+
+    <p class="muted">
+        Potser l'enllaç és antic, està mal escrit o el contingut s'ha mogut.
+    </p>
+
+    <div style="margin-top: 20px; display: flex; justify-content: center; gap: 12px; flex-wrap: wrap;">
+        <a class="btn btn-primary" href="{% url 'home' %}">
+            🏠 Tornar a l'inici
+        </a>
+
+        {% if user.is_authenticated %}
+            <a class="btn btn-secondary" href="{% url 'game_setup' %}">
+                🚀 Començar partida
+            </a>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,31 +1,16 @@
 from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
-from django.contrib.auth import login, authenticate, logout
-from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import get_object_or_404, redirect, render
 
 from .api_client import get_random_game
 from .forms import SignUpForm, RejectQuestionForm, ProposedQuestionForm
-from .models import GameSession, Player, Question, Answer, ProposedQuestion
+from .models import GameSession, Player, Question, ProposedQuestion
 
 
 def home(request):
     return render(request, "FotLiYa/home.html")
-
-
-def register(request):
-    if request.method == "POST":
-        form = UserCreationForm(request.POST)
-
-        if form.is_valid():
-            user = form.save()
-            login(request, user)
-            return redirect("home")
-    else:
-        form = UserCreationForm()
-
-    return render(request, "FotLiYa/register.html", {"form": form})
 
 
 def user_login(request):
@@ -34,13 +19,16 @@ def user_login(request):
         password = request.POST.get("password")
 
         user = authenticate(request, username=username, password=password)
+
         if user is not None:
             login(request, user)
             return redirect("home")
 
-        return render(request, "FotLiYa/login.html", {
-            "error": "Usuari o contrasenya incorrectes"
-        })
+        return render(
+            request,
+            "FotLiYa/login.html",
+            {"error": "Usuari o contrasenya incorrectes"},
+        )
 
     return render(request, "FotLiYa/login.html")
 
@@ -54,6 +42,19 @@ def logout_confirm(request):
     return render(request, "FotLiYa/logout_confirm.html")
 
 
+def register(request):
+    form = SignUpForm()
+
+    if request.method == "POST":
+        form = SignUpForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            login(request, user)
+            return redirect("home")
+
+    return render(request, "FotLiYa/register.html", {"form": form})
+
+
 def game_setup(request):
     if request.method == "POST":
         try:
@@ -62,9 +63,11 @@ def game_setup(request):
             num_players = 0
 
         if num_players < 2:
-            return render(request, "FotLiYa/game_setup.html", {
-                "error": "La partida ha de tenir com a mínim 2 jugadors."
-            })
+            return render(
+                request,
+                "FotLiYa/game_setup.html",
+                {"error": "Mínim 2 jugadors"},
+            )
 
         if num_players > 20:
             num_players = 20
@@ -78,12 +81,14 @@ def game_setup(request):
 def game_names(request):
     num_players = request.session.get("num_players")
 
-    if not num_players or num_players < 2:
+    if not num_players:
         return redirect("game_setup")
 
-    return render(request, "FotLiYa/game_names.html", {
-        "range_players": range(num_players)
-    })
+    return render(
+        request,
+        "FotLiYa/game_names.html",
+        {"range_players": range(num_players)},
+    )
 
 
 def save_players_names(request):
@@ -99,51 +104,31 @@ def save_players_names(request):
             name = (request.POST.get(f"player_{i}") or "").strip()
 
             if not name:
-                return render(request, "FotLiYa/game_names.html", {
-                    "range_players": range(num_players),
-                    "error": "Omple tots els noms abans de continuar."
-                })
+                return render(
+                    request,
+                    "FotLiYa/game_names.html",
+                    {
+                        "range_players": range(num_players),
+                        "error": "Omple tots els noms",
+                    },
+                )
 
             players.append(name)
 
         request.session["players"] = players
 
-        game_session = GameSession.objects.create(
+        session = GameSession.objects.create(
             user=request.user if request.user.is_authenticated else None,
         )
 
         for name in players:
-            Player.objects.create(
-                session=game_session,
-                name=name,
-            )
+            Player.objects.create(session=session, name=name)
 
-        request.session["game_session_id"] = game_session.id
+        request.session["game_session_id"] = session.id
+
         return redirect("game")
 
     return redirect("game_names")
-
-
-def finish_game(request):
-    if request.method == "POST":
-        session_id = request.session.get("game_session_id")
-
-        if session_id:
-            game_session = GameSession.objects.filter(id=session_id).first()
-
-            if game_session and not game_session.ended:
-                game_session.duration_seconds = 0
-                game_session.ended = True
-                game_session.save()
-
-        request.session.pop("players", None)
-        request.session.pop("num_players", None)
-        request.session.pop("game_session_id", None)
-        request.session.pop("game_started_at", None)
-
-        return redirect("home")
-
-    return redirect("game")
 
 
 def game(request):
@@ -154,10 +139,20 @@ def game(request):
 
     game = get_random_game(players)
 
-    return render(request, "FotLiYa/game.html", {
-        "players": players,
-        "game": game,
-    })
+    # Si l'API falla o no retorna res, mostrem una pregunta per defecte
+    if not game:
+        game = {
+            "question": "🔥 Quin és el teu gènere musical per escalfar la prèvia?"
+        }
+
+    return render(
+        request,
+        "FotLiYa/game.html",
+        {
+            "players": players,
+            "game": game,
+        },
+    )
 
 
 def add_player(request):
@@ -167,8 +162,13 @@ def add_player(request):
 
         if name and session_id:
             game_session = GameSession.objects.filter(id=session_id).first()
+
             if game_session:
-                Player.objects.create(session=game_session, name=name)
+                Player.objects.create(
+                    session=game_session,
+                    name=name,
+                )
+
                 players = request.session.get("players", [])
                 players.append(name)
                 request.session["players"] = players
@@ -176,20 +176,56 @@ def add_player(request):
     return redirect("game")
 
 
+def finish_game(request):
+    if request.method == "POST":
+        session_id = request.session.get("game_session_id")
+
+        if session_id:
+            session = GameSession.objects.filter(id=session_id).first()
+
+            if session and not session.ended:
+                session.duration_seconds = 0
+                session.ended = True
+                session.save()
+
+        request.session.pop("players", None)
+        request.session.pop("num_players", None)
+        request.session.pop("game_session_id", None)
+
+        return redirect("home")
+
+    return redirect("game")
+
+
+# ==========================
+# ADMINISTRACIÓ DE PREGUNTES
+# ==========================
+
 @staff_member_required
 def admin_question_list(request):
-    proposed_questions = ProposedQuestion.objects.filter(status="pending").select_related(
-        "created_by"
-    ).order_by("-created_at")
+    proposed_questions = (
+        ProposedQuestion.objects
+        .filter(status="pending")
+        .select_related("created_by")
+        .order_by("-created_at")
+    )
 
-    return render(request, "FotLiYa/admin_question_list.html", {
-        "proposed_questions": proposed_questions,
-    })
+    return render(
+        request,
+        "FotLiYa/admin_question_list.html",
+        {
+            "proposed_questions": proposed_questions,
+        },
+    )
 
 
 @staff_member_required
 def approve_question(request, pk):
-    proposed_question = get_object_or_404(ProposedQuestion, pk=pk, status="pending")
+    proposed_question = get_object_or_404(
+        ProposedQuestion,
+        pk=pk,
+        status="pending",
+    )
 
     Question.objects.create(
         text=proposed_question.text,
@@ -199,96 +235,175 @@ def approve_question(request, pk):
 
     proposed_question.status = "approved"
     proposed_question.admin_note = ""
-    proposed_question.save(update_fields=["status", "admin_note"])
+    proposed_question.save(
+        update_fields=["status", "admin_note"],
+    )
 
-    messages.success(request, "Pregunta aprovada correctament.")
+    messages.success(
+        request,
+        "Pregunta aprovada correctament.",
+    )
+
     return redirect("admin_questions")
 
 
 @staff_member_required
 def reject_question(request, pk):
-    proposed_question = get_object_or_404(ProposedQuestion, pk=pk, status="pending")
+    proposed_question = get_object_or_404(
+        ProposedQuestion,
+        pk=pk,
+        status="pending",
+    )
 
     if request.method == "POST":
         form = RejectQuestionForm(request.POST)
+
         if form.is_valid():
             proposed_question.status = "rejected"
             proposed_question.admin_note = form.cleaned_data["admin_note"]
-            proposed_question.save(update_fields=["status", "admin_note"])
+            proposed_question.save(
+                update_fields=["status", "admin_note"],
+            )
 
-            messages.success(request, "Pregunta rebutjada correctament.")
+            messages.success(
+                request,
+                "Pregunta rebutjada correctament.",
+            )
+
             return redirect("admin_questions")
     else:
         form = RejectQuestionForm()
 
-    return render(request, "FotLiYa/admin_reject_form.html", {
-        "form": form,
-        "proposed_question": proposed_question,
-    })
+    return render(
+        request,
+        "FotLiYa/admin_reject_form.html",
+        {
+            "form": form,
+            "proposed_question": proposed_question,
+        },
+    )
 
+
+# ==========================
+# GESTIÓ DE PREGUNTES D'USUARI
+# ==========================
 
 @login_required
 def question_list(request):
-    questions = ProposedQuestion.objects.filter(created_by=request.user).order_by("-created_at")
-    return render(request, "FotLiYa/question_list.html", {
-        "questions": questions,
-    })
+    questions = (
+        ProposedQuestion.objects
+        .filter(created_by=request.user)
+        .order_by("-created_at")
+    )
+
+    return render(
+        request,
+        "FotLiYa/question_list.html",
+        {
+            "questions": questions,
+        },
+    )
 
 
 @login_required
 def question_create(request):
     if request.method == "POST":
         form = ProposedQuestionForm(request.POST)
+
         if form.is_valid():
             proposed_question = form.save(commit=False)
             proposed_question.created_by = request.user
             proposed_question.save()
 
-            messages.success(request, "Pregunta enviada correctament i pendent de revisió.")
+            messages.success(
+                request,
+                "Pregunta enviada correctament i pendent de revisió.",
+            )
+
             return redirect("question_list")
     else:
         form = ProposedQuestionForm()
 
-    return render(request, "FotLiYa/question_form.html", {
-        "form": form,
-    })
+    return render(
+        request,
+        "FotLiYa/question_form.html",
+        {
+            "form": form,
+        },
+    )
 
 
 @login_required
 def question_edit(request, pk):
-    question = get_object_or_404(ProposedQuestion, pk=pk, created_by=request.user)
+    question = get_object_or_404(
+        ProposedQuestion,
+        pk=pk,
+        created_by=request.user,
+    )
 
     if question.status != "pending":
-        messages.error(request, "Només pots editar preguntes pendents.")
+        messages.error(
+            request,
+            "Només pots editar preguntes pendents.",
+        )
         return redirect("question_list")
 
     if request.method == "POST":
-        form = ProposedQuestionForm(request.POST, instance=question)
+        form = ProposedQuestionForm(
+            request.POST,
+            instance=question,
+        )
+
         if form.is_valid():
             form.save()
-            messages.success(request, "Pregunta actualitzada correctament.")
+
+            messages.success(
+                request,
+                "Pregunta actualitzada correctament.",
+            )
+
             return redirect("question_list")
     else:
         form = ProposedQuestionForm(instance=question)
 
-    return render(request, "FotLiYa/question_form.html", {
-        "form": form,
-    })
+    return render(
+        request,
+        "FotLiYa/question_form.html",
+        {
+            "form": form,
+        },
+    )
 
 
 @login_required
 def question_delete(request, pk):
-    question = get_object_or_404(ProposedQuestion, pk=pk, created_by=request.user)
+    question = get_object_or_404(
+        ProposedQuestion,
+        pk=pk,
+        created_by=request.user,
+    )
 
     if question.status != "pending":
-        messages.error(request, "Només pots eliminar preguntes que estiguin pendents.")
+        messages.error(
+            request,
+            "Només pots eliminar preguntes que estiguin pendents.",
+        )
         return redirect("question_list")
 
     if request.method == "POST":
         question.delete()
-        messages.success(request, "Pregunta eliminada correctament.")
+
+        messages.success(
+            request,
+            "Pregunta eliminada correctament.",
+        )
+
         return redirect("question_list")
 
-    return render(request, "FotLiYa/question_confirm_delete.html", {
-        "question": question,
-    })
+    return render(
+        request,
+        "FotLiYa/question_confirm_delete.html",
+        {
+            "question": question,
+        },
+    )

@@ -1,30 +1,74 @@
 {% extends "FotLiYa/base.html" %}
 
-{% block title %}Admin Questions{% endblock %}
+{% block title %}Admin · Preguntes proposades{% endblock %}
 
 {% block content %}
-<div class="card">
-    <h1>Preguntes pendents</h1>
+<div class="card card-wide">
+    <h1>🛠 Panell d’administració</h1>
+    <p>Gestió de preguntes proposades pels usuaris.</p>
 
-    {% if proposed_questions %}
-        <ul style="padding-left: 20px;">
-            {% for question in proposed_questions %}
-                <li style="margin-bottom: 18px;">
-                    <strong>{{ question.category }}</strong><br>
-                    {{ question.text }}<br>
-                    <small>Autor: {{ question.created_by.username }} · {{ question.created_at }}</small><br><br>
+    <div class="chips">
+        <span class="chip">Total: {{ questions|length }}</span>
+        <span class="chip">Pendents: {{ pending_questions_count }}</span>
+    </div>
 
-                    <form method="post" action="{% url 'approve_question' question.pk %}" style="display:inline;">
-                        {% csrf_token %}
-                        <button class="btn btn-primary" type="submit">Aprovar</button>
-                    </form>
-
-                    <a class="btn btn-secondary" href="{% url 'reject_question' question.pk %}">Rebutjar</a>
-                </li>
-            {% endfor %}
-        </ul>
-    {% else %}
-        <p>No hi ha preguntes pendents.</p>
-    {% endif %}
+    <div class="table-wrap">
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>Text</th>
+                    <th>Categoria</th>
+                    <th>Autor</th>
+                    <th>Data</th>
+                    <th>Estat</th>
+                    <th>Accions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for q in questions %}
+                <tr>
+                    <td>
+                        <strong>{{ q.text }}</strong>
+                        {% if q.mechanics %}
+                            <div class="muted">Mecànica: {{ q.mechanics }}</div>
+                        {% endif %}
+                        {% if q.admin_note %}
+                            <div class="muted">Nota admin: {{ q.admin_note }}</div>
+                        {% endif %}
+                    </td>
+                    <td>{{ q.category }}</td>
+                    <td>{{ q.created_by.username }}</td>
+                    <td>{{ q.created_at|date:"d/m/Y H:i" }}</td>
+                    <td>
+                        {% if q.status == "pending" %}
+                            <span class="status-chip status-pending">Pendent</span>
+                        {% elif q.status == "approved" %}
+                            <span class="status-chip status-approved">Aprovada</span>
+                        {% else %}
+                            <span class="status-chip status-rejected">Rebutjada</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if q.status == "pending" %}
+                            <div class="admin-actions">
+                                <form method="post" action="{% url 'approve_question' q.pk %}">
+                                    {% csrf_token %}
+                                    <button class="btn btn-primary" type="submit">Aprovar</button>
+                                </form>
+                                <a class="btn btn-danger" href="{% url 'reject_question' q.pk %}">Rebutjar</a>
+                            </div>
+                        {% else %}
+                            <span class="muted">Ja processada</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6">No hi ha preguntes proposades.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 </div>
 {% endblock %}
