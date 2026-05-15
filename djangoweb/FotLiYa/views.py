@@ -1,5 +1,4 @@
 from django.contrib import messages
-from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
@@ -139,7 +138,6 @@ def game(request):
 
     game = get_random_game(players)
 
-    # Si l'API falla o no retorna res, mostrem una pregunta per defecte
     if not game:
         game = {
             "question": "🔥 Quin és el teu gènere musical per escalfar la prèvia?"
@@ -201,26 +199,29 @@ def finish_game(request):
 # ADMINISTRACIÓ DE PREGUNTES
 # ==========================
 
-@staff_member_required
 def admin_question_list(request):
+    if not request.user.is_authenticated or not request.user.is_staff:
+        return redirect('login')
+
     proposed_questions = (
         ProposedQuestion.objects
         .filter(status="pending")
         .select_related("created_by")
         .order_by("-created_at")
     )
-
     return render(
         request,
         "FotLiYa/admin_question_list.html",
         {
-            "proposed_questions": proposed_questions,
+            "questions": proposed_questions,
         },
     )
 
 
-@staff_member_required
 def approve_question(request, pk):
+    if not request.user.is_authenticated or not request.user.is_staff:
+        return redirect('login')
+
     proposed_question = get_object_or_404(
         ProposedQuestion,
         pk=pk,
@@ -247,8 +248,10 @@ def approve_question(request, pk):
     return redirect("admin_questions")
 
 
-@staff_member_required
 def reject_question(request, pk):
+    if not request.user.is_authenticated or not request.user.is_staff:
+        return redirect('login')
+
     proposed_question = get_object_or_404(
         ProposedQuestion,
         pk=pk,
