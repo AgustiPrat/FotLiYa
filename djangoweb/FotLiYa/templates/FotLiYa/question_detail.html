@@ -1,0 +1,95 @@
+{% extends "FotLiYa/base.html" %}
+{% block title %}{{ question.text|truncatechars:50 }} — FotLiYa{% endblock %}
+
+{% block content %}
+<div class="card" style="width: min(100%, 680px);"
+     vocab="https://schema.org/"
+     typeof="Question">
+
+    <div style="margin-bottom:20px;">
+        <a href="{% url 'question_list' %}" class="btn btn-secondary"
+           style="padding:8px 14px; font-size:0.88rem;">
+            ← Tornar a les meves preguntes
+        </a>
+    </div>
+
+    <h2 style="margin-bottom:6px;" property="name">
+        {{ question.text }}
+    </h2>
+
+    <div style="display:flex; flex-wrap:wrap; gap:10px; margin:16px 0;">
+
+        <span style="padding:6px 14px; border-radius:999px; font-size:0.85rem; font-weight:700;
+                     background:rgba(0,245,212,0.15); border:1px solid rgba(0,245,212,0.30); color:#00f5d4;"
+              property="about">
+            {{ question.category }}
+        </span>
+
+        {% if question.mechanics %}
+        <span style="padding:6px 14px; border-radius:999px; font-size:0.85rem; font-weight:700;
+                     background:rgba(124,58,237,0.15); border:1px solid rgba(124,58,237,0.30); color:#c084fc;">
+            {{ question.mechanics }}
+        </span>
+        {% endif %}
+
+        {% if question.status == 'pending' %}
+            <span style="padding:6px 14px; border-radius:999px; font-size:0.85rem; font-weight:700;
+                         background:rgba(255,138,0,0.20); border:1px solid rgba(255,138,0,0.28); color:#ffb347;">
+                ⏳ Pendent
+            </span>
+        {% elif question.status == 'approved' %}
+            <span style="padding:6px 14px; border-radius:999px; font-size:0.85rem; font-weight:700;
+                         background:rgba(0,245,212,0.20); border:1px solid rgba(0,245,212,0.28); color:#00f5d4;">
+                ✅ Aprovada
+            </span>
+        {% else %}
+            <span style="padding:6px 14px; border-radius:999px; font-size:0.85rem; font-weight:700;
+                         background:rgba(255,45,117,0.20); border:1px solid rgba(255,45,117,0.28); color:#ff7aaa;">
+                ❌ Rebutjada
+            </span>
+        {% endif %}
+    </div>
+
+    <hr style="border-color: rgba(255,255,255,0.14); margin: 18px 0;">
+
+    <div style="display:grid; gap:12px; font-size:0.95rem;">
+
+        <div style="display:flex; gap:10px; align-items:center;">
+            <span style="opacity:0.55; min-width:100px;">Autor</span>
+            <span div property="author" typeof="Person">
+                <span property="name">{{ question.created_by.username }}</span>
+            </span>
+        </div>
+
+        <div style="display:flex; gap:10px; align-items:center;">
+            <span style="opacity:0.55; min-width:100px;">Data</span>
+            <span property="dateCreated" content="{{ question.created_at|date:'Y-m-d' }}">
+                {{ question.created_at|date:"d/m/Y H:i" }}
+            </span>
+        </div>
+
+        {% if question.admin_note %}
+        <div style="margin-top:8px; background:rgba(255,45,117,0.10);
+                    border-left:3px solid rgba(255,45,117,0.5);
+                    padding:10px 14px; border-radius:0 10px 10px 0;">
+            <span style="font-size:0.85rem; opacity:0.6; font-weight:600;">Nota de l'administrador</span>
+            <p style="margin:4px 0 0;" property="description">{{ question.admin_note }}</p>
+        </div>
+        {% endif %}
+
+    </div>
+
+    {% if question.status == 'pending' %}
+    <div style="display:flex; gap:10px; margin-top:24px; flex-wrap:wrap;">
+        <a href="{% url 'question_edit' question.pk %}" class="btn btn-primary">
+            ✏️ Editar
+        </a>
+        <a href="{% url 'question_delete' question.pk %}" class="btn"
+           style="background:rgba(255,45,117,0.18); border:1px solid rgba(255,45,117,0.30); color:#ff7aaa;">
+            🗑️ Eliminar
+        </a>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}

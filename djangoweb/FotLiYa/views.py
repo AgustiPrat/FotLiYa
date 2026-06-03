@@ -285,6 +285,16 @@ def reject_question(request, pk):
             "proposed_question": proposed_question,
         },
     )
+@login_required
+def question_detail(request, pk):
+    question = get_object_or_404(
+        ProposedQuestion,
+        pk=pk,
+        created_by=request.user
+    )
+    return render(request, 'FotLiYa/question_detail.html', {
+        'question': question
+    })
 
 
 # ==========================
