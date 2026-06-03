@@ -1,26 +1,96 @@
 {% extends "FotLiYa/base.html" %}
+{% block title %}Jugant — FotLiYa{% endblock %}
+
 {% block content %}
-<div class="card">
-    <h2>🔥 FotLiYa</h2>
-    <div class="chips">
-        {% for p in players %}
-            <span class="chip">{{ p }}</span>
-        {% endfor %}
+
+<div class="card" style="width: min(100%, 640px);">
+
+    {# Jugadors #}
+    <div style="margin-bottom: 18px;">
+        <p style="font-size:0.78rem; font-weight:700; text-transform:uppercase; letter-spacing:1px; opacity:0.5; margin:0 0 10px;">
+            Jugadors
+        </p>
+
+        <div class="chips">
+            {% for p in players %}
+                <span class="chip"
+                    {% if forloop.first %}
+                        style="background: linear-gradient(135deg, var(--cyan), #8affd5);
+                               color: #111;
+                               border-color: transparent;
+                               font-weight: 700;"
+                    {% endif %}
+                >
+                    {% if forloop.first %}🎯 {% endif %}{{ p }}
+                </span>
+            {% endfor %}
+        </div>
     </div>
-    <form method="post" action="{% url 'add_player' %}" style="margin-top:12px; display:flex; gap:8px; justify-content:center;">
+
+    {# Afegir jugador #}
+    <form method="post" action="{% url 'add_player' %}"
+          style="display:flex; gap:8px; margin-bottom:20px;">
         {% csrf_token %}
-        <input type="text" name="new_player" placeholder="Nom del nou jugador" required>
-        <button type="submit" class="btn btn-secondary">Afegir ➕</button>
+        <input type="text" name="new_player" placeholder="Afegir jugador..." style="margin:0; flex:1;">
+        <button type="submit" class="btn btn-secondary" style="padding:10px 14px; white-space:nowrap;">
+            ➕
+        </button>
     </form>
-    <hr style="border-color: rgba(255,255,255,0.14); margin: 18px 0;">
-    <h3>{{ game.title }}</h3>
-    <p>{{ game.body }}</p>
-    <div style="margin-top:18px; display:flex; gap:12px; justify-content:center; flex-wrap:wrap;">
-        <a href="{% url 'game' %}" class="btn btn-primary">Següent 🔥</a>
-        <form method="post" action="{% url 'finish_game' %}">
-            {% csrf_token %}
-            <button type="submit" class="btn btn-secondary">Finalitzar partida</button>
-        </form>
+
+    <hr style="border:none; border-top:1px solid rgba(255,255,255,0.10); margin:0 0 24px;">
+
+    {# Targeta de pregunta amb animació #}
+    <div id="question-card" style="
+        background: rgba(255,255,255,0.06);
+        border: 1px solid rgba(255,255,255,0.12);
+        border-radius: 20px;
+        padding: 24px;
+        margin-bottom: 24px;
+        animation: fadeInUp 0.4s ease both;
+    ">
+
+        {% if game.title %}
+            <p style="font-size:0.78rem; font-weight:700; text-transform:uppercase;
+                      letter-spacing:1px; opacity:0.5; margin:0 0 10px;">
+                {{ game.title }}
+            </p>
+        {% endif %}
+
+        <p style="font-size:1.15rem; line-height:1.6; margin:0; font-weight:500;">
+            {{ game.body }}
+        </p>
+
     </div>
+
+    {# Botons d'acció #}
+    <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap;">
+
+        <a href="{% url 'game' %}" class="btn btn-primary" style="flex:1; max-width:200px;">
+            Següent 🔥
+        </a>
+
+        <form method="post" action="{% url 'finish_game' %}" style="flex:1; max-width:200px;">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-secondary" style="width:100%;">
+                Finalitzar 🏁
+            </button>
+        </form>
+
+    </div>
+
 </div>
+
+<style>
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(14px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+</style>
+
 {% endblock %}
