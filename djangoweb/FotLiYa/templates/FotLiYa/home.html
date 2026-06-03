@@ -1,23 +1,109 @@
 {% extends "FotLiYa/base.html" %}
+{% block title %}FotLiYa — La prèvia perfecta{% endblock %}
 
 {% block content %}
-<div class="card">
-    <h1>🎉 FotLiYa</h1>
-    <p>L’app ideal per la prèvia: entra, posa els noms i que comenci la festa.</p>
+<div style="display:flex; flex-direction:column; gap:20px; width:min(100%, 600px);">
 
-    {% if user.is_authenticated %}
-        <p>Hola, {{ user.username }}. Les partides es desaran al teu compte.</p>
-    {% else %}
-        <p>Pots jugar sense compte. Si et registres, guardarem les estadístiques de les partides.</p>
-    {% endif %}
+    {# Targeta principal #}
+    <div class="card">
+        <h1 style="font-size:2rem; margin-bottom:8px;">🎉 FotLiYa</h1>
+        <p style="font-size:1.05rem; opacity:0.85; margin-bottom:20px;">
+            L'app ideal per la prèvia: entra, posa els noms i que comenci la festa.
+        </p>
 
-    <a class="btn btn-primary" href="{% url 'game_setup' %}">🚀 Començar partida</a>
+        {% if user.is_authenticated %}
+            <p style="margin-bottom:20px;">
+                Hola, <strong>{{ user.username }}</strong>. Les partides es desaran al teu compte.
+            </p>
+        {% else %}
+            <p style="margin-bottom:20px; opacity:0.75; font-size:0.95rem;">
+                Pots jugar sense compte. Si et registres, guardarem les estadístiques de les partides.
+            </p>
+        {% endif %}
 
-    <div style="margin-top:16px; display:flex; gap:12px; justify-content:center; flex-wrap:wrap;">
+        <a class="btn btn-primary" href="{% url 'game_setup' %}" style="width:100%; justify-content:center;">
+            🚀 Començar partida
+        </a>
+
         {% if not user.is_authenticated %}
-            <a class="btn btn-secondary" href="{% url 'login' %}">Iniciar sessió</a>
-            <a class="btn btn-secondary" href="{% url 'register' %}">Crear compte</a>
+            <div style="display:flex; gap:10px; margin-top:12px;">
+                <a class="btn btn-secondary" href="{% url 'login' %}" style="flex:1; justify-content:center;">
+                    Iniciar sessió
+                </a>
+                <a class="btn btn-secondary" href="{% url 'register' %}" style="flex:1; justify-content:center;">
+                    Crear compte
+                </a>
+            </div>
         {% endif %}
     </div>
+
+    {# Estadístiques generals #}
+    <div class="card" style="padding:24px;">
+        <p style="font-size:0.78rem; font-weight:700; text-transform:uppercase;
+                  letter-spacing:1px; opacity:0.5; margin:0 0 16px;">
+            📊 Estadístiques
+        </p>
+        <div style="display:flex; gap:12px; flex-wrap:wrap; justify-content:center;">
+            <div style="flex:1; min-width:120px; text-align:center;
+                        background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.10);
+                        border-radius:16px; padding:16px 12px;">
+                <div style="font-size:1.8rem; font-weight:800; color:var(--cyan);">
+                    {{ total_questions }}
+                </div>
+                <div style="font-size:0.8rem; opacity:0.6; margin-top:4px;">Preguntes</div>
+            </div>
+            <div style="flex:1; min-width:120px; text-align:center;
+                        background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.10);
+                        border-radius:16px; padding:16px 12px;">
+                <div style="font-size:1.8rem; font-weight:800; color:var(--pink);">
+                    {{ total_sessions }}
+                </div>
+                <div style="font-size:0.8rem; opacity:0.6; margin-top:4px;">Partides jugades</div>
+            </div>
+            <div style="flex:1; min-width:120px; text-align:center;
+                        background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.10);
+                        border-radius:16px; padding:16px 12px;">
+                <div style="font-size:1.8rem; font-weight:800; color:var(--orange);">
+                    {{ total_players }}
+                </div>
+                <div style="font-size:0.8rem; opacity:0.6; margin-top:4px;">Jugadors totals</div>
+            </div>
+        </div>
+    </div>
+
+    {# Com es juga #}
+    <div class="card" style="padding:24px;">
+        <p style="font-size:0.78rem; font-weight:700; text-transform:uppercase;
+                  letter-spacing:1px; opacity:0.5; margin:0 0 16px;">
+            📖 Com es juga
+        </p>
+        <div style="display:flex; flex-direction:column; gap:12px;">
+            <div style="display:flex; gap:14px; align-items:flex-start;">
+                <span style="font-size:1.4rem; flex-shrink:0;">1️⃣</span>
+                <p style="margin:0; opacity:0.85; font-size:0.95rem; line-height:1.5;">
+                    Introdueix els noms de tots els jugadors que participen a la prèvia.
+                </p>
+            </div>
+            <div style="display:flex; gap:14px; align-items:flex-start;">
+                <span style="font-size:1.4rem; flex-shrink:0;">2️⃣</span>
+                <p style="margin:0; opacity:0.85; font-size:0.95rem; line-height:1.5;">
+                    Cada ronda apareix una pregunta o repte. El jugador marcat ha de respondre o complir-lo.
+                </p>
+            </div>
+            <div style="display:flex; gap:14px; align-items:flex-start;">
+                <span style="font-size:1.4rem; flex-shrink:0;">3️⃣</span>
+                <p style="margin:0; opacity:0.85; font-size:0.95rem; line-height:1.5;">
+                    Clica "Següent" per passar a la propera pregunta. Quan acabeu, clica "Finalitzar".
+                </p>
+            </div>
+            <div style="display:flex; gap:14px; align-items:flex-start;">
+                <span style="font-size:1.4rem; flex-shrink:0;">💡</span>
+                <p style="margin:0; opacity:0.85; font-size:0.95rem; line-height:1.5;">
+                    Pots proposar les teves pròpies preguntes des de "Les meves preguntes" si estàs registrat!
+                </p>
+            </div>
+        </div>
+    </div>
+
 </div>
 {% endblock %}

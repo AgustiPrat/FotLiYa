@@ -9,7 +9,14 @@ from .models import GameSession, Player, Question, ProposedQuestion
 
 
 def home(request):
-    return render(request, "FotLiYa/home.html")
+    total_questions = Question.objects.filter(active=True).count()
+    total_sessions = GameSession.objects.filter(ended=True).count()
+    total_players = Player.objects.count()
+    return render(request, "FotLiYa/home.html", {
+        "total_questions": total_questions,
+        "total_sessions": total_sessions,
+        "total_players": total_players,
+    })
 
 
 def user_login(request):
