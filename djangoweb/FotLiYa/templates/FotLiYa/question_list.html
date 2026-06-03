@@ -9,7 +9,6 @@
         <a href="{% url 'question_create' %}" class="btn btn-primary">+ Nova pregunta</a>
     </div>
 
-    {# Missatges d'èxit/error del Django messages framework #}
     {% if messages %}
         {% for message in messages %}
             <div class="{% if message.tags == 'error' %}error{% else %}success-msg{% endif %}"
@@ -30,13 +29,11 @@
             <div style="background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.13);
                         border-radius:18px; padding:18px 20px;">
 
-                {# Capçalera: categoria + estat #}
                 <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:10px;">
                     <span style="font-size:0.82rem; opacity:0.6; font-weight:600; text-transform:uppercase; letter-spacing:0.5px;">
                         {{ q.category }}{% if q.mechanics %} · {{ q.mechanics }}{% endif %}
                     </span>
 
-                    {# Chip d'estat amb color #}
                     {% if q.status == 'pending' %}
                         <span style="padding:4px 12px; border-radius:999px; font-size:0.8rem; font-weight:700;
                                      background:rgba(255,138,0,0.22); border:1px solid rgba(255,138,0,0.40); color:#ffb347;">
@@ -55,12 +52,10 @@
                     {% endif %}
                 </div>
 
-                {# Text de la pregunta #}
                 <p style="margin:0 0 {% if q.status == 'rejected' and q.admin_note %}10px{% else %}14px{% endif %}; font-size:1rem; line-height:1.5;">
                     {{ q.text }}
                 </p>
 
-                {# Nota de rebuig si n'hi ha #}
                 {% if q.status == 'rejected' and q.admin_note %}
                     <div style="background:rgba(255,45,117,0.10); border-left:3px solid rgba(255,45,117,0.5);
                                 padding:8px 12px; border-radius:0 10px 10px 0; margin-bottom:14px;
@@ -69,8 +64,13 @@
                     </div>
                 {% endif %}
 
-                {# Botons editar/eliminar (només si és pending) #}
                 <div style="display:flex; gap:10px; flex-wrap:wrap;">
+
+                    <a href="{% url 'question_detail' q.pk %}" class="btn btn-secondary"
+                       style="padding:8px 14px; font-size:0.88rem;">
+                        🔍 Veure detall
+                    </a>
+
                     {% if q.status == 'pending' %}
                         <a href="{% url 'question_edit' q.pk %}" class="btn btn-secondary"
                            style="padding:8px 14px; font-size:0.88rem;">
@@ -82,6 +82,7 @@
                             🗑️ Eliminar
                         </a>
                     {% endif %}
+
                     <span style="margin-left:auto; font-size:0.78rem; opacity:0.45; align-self:center;">
                         {{ q.created_at|date:"d/m/Y" }}
                     </span>
