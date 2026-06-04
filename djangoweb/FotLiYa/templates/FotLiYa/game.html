@@ -3,9 +3,33 @@
 
 {% block content %}
 
-<div class="card" style="width: min(100%, 640px);">
+<div class="card" style="width: min(100%, 700px);">
 
-    {# Jugadors #}
+    <div style="text-align:center; margin-bottom:22px;">
+        <p style="font-size:0.78rem; font-weight:700; text-transform:uppercase; letter-spacing:1px; opacity:0.5; margin:0 0 8px;">
+            Ronda actual
+        </p>
+        <div style="font-size:1.05rem; font-weight:700; color:var(--cyan);">
+            🔁 Ronda {{ round_number }}
+        </div>
+    </div>
+
+    <div style="
+        background: linear-gradient(135deg, rgba(0,245,212,0.16), rgba(124,58,237,0.14));
+        border: 1px solid rgba(0,245,212,0.26);
+        border-radius: 20px;
+        padding: 18px 20px;
+        margin-bottom: 22px;
+        text-align: center;
+    ">
+        <p style="font-size:0.78rem; font-weight:700; text-transform:uppercase; letter-spacing:1px; opacity:0.55; margin:0 0 8px;">
+            Li toca a
+        </p>
+        <h2 style="margin:0; font-size:1.55rem;">
+            🎯 {{ current_player }}
+        </h2>
+    </div>
+
     <div style="margin-bottom: 18px;">
         <p style="font-size:0.78rem; font-weight:700; text-transform:uppercase; letter-spacing:1px; opacity:0.5; margin:0 0 10px;">
             Jugadors
@@ -14,20 +38,19 @@
         <div class="chips">
             {% for p in players %}
                 <span class="chip"
-                    {% if forloop.first %}
+                    {% if p == current_player %}
                         style="background: linear-gradient(135deg, var(--cyan), #8affd5);
                                color: #111;
                                border-color: transparent;
                                font-weight: 700;"
                     {% endif %}
                 >
-                    {% if forloop.first %}🎯 {% endif %}{{ p }}
+                    {% if p == current_player %}🎯 {% endif %}{{ p }}
                 </span>
             {% endfor %}
         </div>
     </div>
 
-    {# Afegir jugador #}
     <form method="post" action="{% url 'add_player' %}"
           style="display:flex; gap:8px; margin-bottom:20px;">
         {% csrf_token %}
@@ -39,7 +62,6 @@
 
     <hr style="border:none; border-top:1px solid rgba(255,255,255,0.10); margin:0 0 24px;">
 
-    {# Targeta de pregunta amb animació #}
     <div id="question-card" style="
         background: rgba(255,255,255,0.06);
         border: 1px solid rgba(255,255,255,0.12);
@@ -49,12 +71,10 @@
         animation: fadeInUp 0.4s ease both;
     ">
 
-        {% if game.title %}
-            <p style="font-size:0.78rem; font-weight:700; text-transform:uppercase;
-                      letter-spacing:1px; opacity:0.5; margin:0 0 10px;">
-                {{ game.title }}
-            </p>
-        {% endif %}
+        <p style="font-size:0.78rem; font-weight:700; text-transform:uppercase;
+                  letter-spacing:1px; opacity:0.5; margin:0 0 10px;">
+            {{ game.title }}
+        </p>
 
         <p style="font-size:1.15rem; line-height:1.6; margin:0; font-weight:500;">
             {{ game.body }}
@@ -62,7 +82,6 @@
 
     </div>
 
-    {# Botons d'acció #}
     <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap;">
 
         <a href="{% url 'game' %}" class="btn btn-primary" style="flex:1; max-width:200px;">
