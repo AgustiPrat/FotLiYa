@@ -479,3 +479,24 @@ def stats(request):
             "total_players": total_players,
         },
     )
+
+@login_required
+def profile(request):
+    proposed = ProposedQuestion.objects.filter(created_by=request.user)
+    sessions = (
+        GameSession.objects
+        .filter(user=request.user)
+        .prefetch_related("players")
+        .order_by("-created_at")
+    )
+    return render(request, "FotLiYa/profile.html", {
+        "proposed_total": proposed.count(),
+        "proposed_approved": proposed.filter(status="approved").count(),
+        "proposed_pending": proposed.filter(status="pending").count(),
+        "sessions": sessions,
+        "total_sessions": sessions.count(),
+    })
+
+
+def error_404(request, exception=None):
+    return render(request, "FotLiYa/404.html", status=404)

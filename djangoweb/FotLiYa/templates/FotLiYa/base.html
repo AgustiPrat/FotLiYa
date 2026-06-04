@@ -359,7 +359,7 @@
 
         <div class="nav-links">
             {% if user.is_authenticated %}
-                <span class="nav-pill">👤 {{ user.username }}</span>
+                <a class="nav-pill" href="{% url 'profile' %}">👤 {{ user.username }}</a>
 
                 {% if user.is_staff %}
                     <a class="nav-pill" href="{% url 'admin_questions' %}">
@@ -370,9 +370,9 @@
                     </a>
                 {% endif %}
 
+                <a class="nav-pill" href="{% url 'game_setup' %}">🚀 Jugar</a>
                 <a class="nav-pill" href="{% url 'question_list' %}">💡 Les meves preguntes</a>
                 <a class="nav-pill" href="{% url 'stats' %}">📊 Estadístiques</a>
-
                 <a class="nav-pill" href="{% url 'logout_confirm' %}">Logout</a>
             {% else %}
                 <a class="nav-pill" href="{% url 'login' %}">Login</a>
