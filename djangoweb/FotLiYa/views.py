@@ -131,6 +131,8 @@ def save_players_names(request):
             Player.objects.create(session=session, name=name)
 
         request.session["game_session_id"] = session.id
+        request.session["current_turn_index"] = 0
+        request.session["round_number"] = 1
 
         return redirect("game")
 
@@ -143,12 +145,37 @@ def game(request):
     if not players:
         return redirect("game_setup")
 
+    current_turn_index = request.session.get("current_turn_index", 0)
+    round_number = request.session.get("round_number", 1)
+
+    if current_turn_index >= len(players):
+        current_turn_index = 0
+
+    current_player = players[current_turn_index]
+
     game = get_random_game(players)
 
     if not game:
         game = {
-            "question": "🔥 Quin és el teu gènere musical per escalfar la prèvia?"
+            "title": "Pregunta",
+            "body": "🔥 Quin és el teu gènere musical per escalfar la prèvia?"
         }
+
+    if not game.get("body"):
+        game["body"] = "🔥 No hi ha pregunta disponible ara mateix."
+
+    if "title" not in game or not game["title"]:
+        game["title"] = "Pregunta"
+
+    next_turn_index = current_turn_index + 1
+    next_round_number = round_number
+
+    if next_turn_index >= len(players):
+        next_turn_index = 0
+        next_round_number += 1
+
+    request.session["current_turn_index"] = next_turn_index
+    request.session["round_number"] = next_round_number
 
     return render(
         request,
@@ -156,9 +183,10 @@ def game(request):
         {
             "players": players,
             "game": game,
+            "current_player": current_player,
+            "round_number": round_number,
         },
     )
-
 
 def add_player(request):
     if request.method == "POST":
@@ -196,6 +224,8 @@ def finish_game(request):
         request.session.pop("players", None)
         request.session.pop("num_players", None)
         request.session.pop("game_session_id", None)
+        request.session.pop("current_turn_index", None)
+        request.session.pop("round_number", None)
 
         return redirect("home")
 
@@ -425,5 +455,27 @@ def question_delete(request, pk):
         "FotLiYa/question_confirm_delete.html",
         {
             "question": question,
+        },
+    )
+
+@login_required
+def stats(request):
+    sessions = (
+        GameSession.objects
+        .filter(user=request.user)
+        .prefetch_related("players")
+        .order_by("-created_at")
+    )
+
+    total_sessions = sessions.count()
+    total_players = sum(session.players.count() for session in sessions)
+
+    return render(
+        request,
+        "FotLiYa/stats.html",
+        {
+            "sessions": sessions,
+            "total_sessions": total_sessions,
+            "total_players": total_players,
         },
     )

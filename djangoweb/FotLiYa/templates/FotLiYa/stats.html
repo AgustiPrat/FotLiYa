@@ -1,0 +1,58 @@
+{% extends "FotLiYa/base.html" %}
+{% block title %}Estadístiques — FotLiYa{% endblock %}
+
+{% block content %}
+<div class="card" style="width:min(100%, 850px);">
+
+    <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:20px;">
+        <div>
+            <h2 style="margin:0 0 6px;">📊 Les meves estadístiques</h2>
+            <p style="margin:0; opacity:0.65;">Resum de les teves partides jugades</p>
+        </div>
+    </div>
+
+    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:14px; margin-bottom:24px;">
+        <div style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.10); border-radius:18px; padding:18px;">
+            <p style="margin:0 0 6px; opacity:0.6; font-size:0.82rem; text-transform:uppercase;">Partides</p>
+            <h3 style="margin:0;">{{ total_sessions }}</h3>
+        </div>
+
+        <div style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.10); border-radius:18px; padding:18px;">
+            <p style="margin:0 0 6px; opacity:0.6; font-size:0.82rem; text-transform:uppercase;">Jugadors acumulats</p>
+            <h3 style="margin:0;">{{ total_players }}</h3>
+        </div>
+    </div>
+
+    {% if sessions %}
+        <div style="display:flex; flex-direction:column; gap:14px;">
+            {% for session in sessions %}
+                <div style="background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.10); border-radius:18px; padding:18px 20px;">
+                    <div style="display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap; margin-bottom:10px;">
+                        <strong>Partida #{{ session.id }}</strong>
+                        <span style="opacity:0.55;">{{ session.created_at|date:"d/m/Y H:i" }}</span>
+                    </div>
+
+                    <p style="margin:0 0 8px;">
+                        <strong>Jugadors:</strong>
+                        {% for player in session.players.all %}
+                            {{ player.name }}{% if not forloop.last %}, {% endif %}
+                        {% endfor %}
+                    </p>
+
+                    <p style="margin:0; opacity:0.7;">
+                        Estat:
+                        {% if session.ended %}
+                            finalitzada
+                        {% else %}
+                            en curs
+                        {% endif %}
+                    </p>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p style="opacity:0.7; margin:0;">Encara no tens partides registrades.</p>
+    {% endif %}
+
+</div>
+{% endblock %}
